@@ -234,6 +234,8 @@ class DataReader(object):
   def _preprocess_frames(self, example, indices):
     """Instantiates the ops used to preprocess the frames data."""
     frames = tf.concat(example['frames'], axis=0)
+    tf.Print(frames, [frames], "hi ")
+    # print(frames.shape, indices.shape)
     frames = tf.gather(frames, indices, axis=1)
     frames = tf.map_fn(
         _convert_frame_data, tf.reshape(frames, [-1]),
