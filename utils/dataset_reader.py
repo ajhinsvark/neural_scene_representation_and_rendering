@@ -203,7 +203,7 @@ class DatasetWriter:
             cameras.append(rec_cameras)
         frames = np.array(frames)
         cameras = np.array(cameras)
-        np.savez_compressed(os.path.join(img_dir, f"record-{self.counter + 1}.npz"), frames=frames, cameras=cameras)
+        np.savez_compressed(os.path.join(img_dir, "record-{}.npz".format(self.counter + 1)), frames=frames, cameras=cameras)
         self.counter += 1
         if self.mode == 'train':
             num_files = 2e6 * 9 / 10
@@ -211,7 +211,7 @@ class DatasetWriter:
             num_files = 2e6 * 1 / 10
 
         if self.counter % 1000 == 0:
-            print(f"{self.counter * 100 / num_files}% complete")
+            print(  "{}% complete".format(self.counter * 100 / num_files))
 
 
 
@@ -233,26 +233,7 @@ class DatasetWriter:
 
         rows = []
         if self.counter % 1000 == 0:
-            print(f"{self.counter * 100 / num_files}% complete")
+            print("{}% complete".format(self.counter * 100 / num_files))
         
-        # np.savez_compressed(os.path.join(img_dir, f"scene-{self.counter + 1}.npz"), frames=frames, cameras=cameras)
-        # for i in range(len(frames)):
-        #     data_row = ["\n" + str(self.counter+1)]
-        #     frame = frames[i, :]
-        #     camera = cameras[i, :]
-
-        #     img = Image.fromarray((frame * 255).astype('uint8'))
-        #     template = 'scene-{}-view-{}.jpg'
-        #     filename = os.path.join(img_dir, template.format(self.counter+1, i+1))
-        #     img.save(filename)
-
-        #     data_row.append(str(i+1))
-        #     data_row.extend([str(x) for x in camera])
-        #     rows.append(",".join(data_row))
-
-        # frames: (seq, 64, 64, 3)
-        # cameras: (seq, 5)
-        # with open(self.csv, 'a')as f:
-        #     f.writelines(rows)
         self.counter += 1
 

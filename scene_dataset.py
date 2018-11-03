@@ -43,7 +43,7 @@ class SceneDataset(Dataset):
     
     def __getitem__(self, i):
         rem = i % 1000
-        name = f"record-{i // 1000 + 1}.npz"
+        name = "record-{}.npz".format(i // 1000 + 1)
         file_path = os.path.join(self.path, name)
         load_start = time.perf_counter()
         f = np.load(file_path, mmap_mode=None)
