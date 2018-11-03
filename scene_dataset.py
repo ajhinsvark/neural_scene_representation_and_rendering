@@ -1,5 +1,5 @@
 import torch
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, Sampler
 import pandas as pd
 from skimage import io
 import numpy as np
@@ -20,6 +20,19 @@ def process_camera(camera):
     yaw = camera[:, 3:4]
     pitch = camera[:, 4:5] 
     return np.concatenate([pos, np.sin(yaw), np.cos(yaw), np.sin(pitch), np.cos(pitch)], axis=1)
+
+
+class SceneSampler(Sampler):
+
+    def __init__(self, data_source, start_idx=0):
+        self.data_source = data_source
+        self.start_idx = start_idx
+
+    def __iter__(self):
+        return iter(range(self.start_idx, len(self.data_source)))
+
+    def __len__(self):
+        return len(range(self.start_idx, len(self.data_source)))
 
 
 class SceneDataset(Dataset):
