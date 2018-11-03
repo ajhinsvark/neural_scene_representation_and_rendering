@@ -10,6 +10,8 @@ from utils.images import imshow
 import os
 from itertools import cycle
 
+device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+printf("Running on", device)
 if __name__ == "__main__":
 
     dirname = ""
@@ -25,7 +27,7 @@ if __name__ == "__main__":
     dataloader_iterator = cycle(iter(dataloader))
     # print("creating iter took", time.perf_counter() -iter_start)
 
-    model = GQN()
+    model = GQN().to(device)
 
     loss_fn = nn.L1Loss()
 
@@ -39,7 +41,7 @@ if __name__ == "__main__":
 
     for t in range(iters):
         load_start = time.perf_counter()
-        batch = next(dataloader_iterator)
+        batch = next(dataloader_iterator).to(device)
         # print("Load took", time.perf_counter() - load_start)
         # imshow(batch['query']['context']['frames'][0][0])
         # Destruct input
