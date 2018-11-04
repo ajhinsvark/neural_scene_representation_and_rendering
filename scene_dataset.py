@@ -55,6 +55,7 @@ class SceneDataset(Dataset):
         return self.len
     
     def __getitem__(self, i):
+        print("Getting", i)
         rem = i % 1000
         name = "record-{}.npz".format(i // 1000 + 1)
         file_path = os.path.join(self.path, name)
