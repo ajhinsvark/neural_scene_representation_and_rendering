@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn
 
+device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+
 class DQN(nn.Module):
     """
     Tower Architecture of DQN
@@ -63,7 +65,7 @@ class DQN(nn.Module):
         views = views.permute([1, 0, 2])
         frames = frames.permute([1, 0, 4, 2, 3])
         
-        out = torch.zeros([len(views[0]), 256, 16, 16])
+        out = torch.zeros([len(views[0]), 256, 16, 16]).to(device)
         
         for i in range(len(views)):
             view = views[i].repeat([16, 16, 1, 1]).permute([2,3,0,1])
@@ -112,7 +114,7 @@ class DQN(nn.Module):
         frames = frames.permute([1, 0, 4, 2, 3])
 
         # Sum all representations
-        out = torch.zeros([len(views[0]), 256, 1, 1])
+        out = torch.zeros([len(views[0]), 256, 1, 1]).to(device)
         for i in range(len(views)):
             view = views[i].repeat([64, 64, 1, 1]).permute([2,3,0,1])
             frame = frames[i]

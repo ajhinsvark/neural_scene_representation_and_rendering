@@ -1,4 +1,5 @@
 from PIL import Image
+import os
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
@@ -13,6 +14,7 @@ def imshow(tensor):
     img.show()
 
 def imsave(batch, prediction, fname):
+    print("CWD:", os.getcwd())
     rand_idx = random.randrange(len(batch['target']))
     # Destruct input
     batch_context = batch['query']['context']
@@ -56,5 +58,5 @@ def imsave(batch, prediction, fname):
     axs[1,2].set_yticklabels([])
     axs[1,2].set_xticklabels([])
 
-    plt.savefig("test_fig.png")
+    plt.savefig(fname)
         

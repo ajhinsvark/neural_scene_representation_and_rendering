@@ -1,6 +1,7 @@
 import torch
 from torch import nn
 
+device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 class VAEDecoder(nn.Module):
 
     def __init__(self):
@@ -20,8 +21,8 @@ class VAEDecoder(nn.Module):
         self.conv1   = nn.Conv2d(512, 3, kernel_size=1)
     
     def reparameterize(self, mu, logvar):
-        std = torch.exp(0.5*logvar)
-        eps = torch.randn_like(std)
+        std = torch.exp(0.5*logvar).to(device)
+        eps = torch.randn_like(std).to(device)
         return eps.mul(std).add_(mu)
 
     def get_normal_samples(self, encoding):

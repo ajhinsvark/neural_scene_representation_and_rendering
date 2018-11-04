@@ -19,9 +19,9 @@ if __name__ == "__main__":
     iters = 10000
     start = time.perf_counter()
     # print(start)
-    dataset = SceneDataset(dataset='shepard_metzler_5_parts', context_size=5, root="data/general")
+    dataset = SceneDataset(dataset='shepard_metzler_5_parts', context_size=5, root="data")
     sampler = SceneSampler(dataset, start_idx=0)
-    dataloader = DataLoader(dataset, batch_size=36, sampler=sampler,
+    dataloader = DataLoader(dataset, batch_size=4, sampler=sampler,
                         num_workers=8, shuffle=False)
     # print("dataloader setup took", time.perf_counter() - start)
     iter_start = time.perf_counter()
@@ -60,6 +60,7 @@ if __name__ == "__main__":
         forward_start = time.perf_counter()
         img = model(batch_views, batch_frames, batch_target_view)
 
+        imsave(batch, img.detach(), "iteration_{}.png".format(t))
         # print("Forward pass took", time.perf_counter() - forward_start)
         loss_start = time.perf_counter()
         loss = loss_fn(img, batch_target)
@@ -76,7 +77,7 @@ if __name__ == "__main__":
             print('[%5d]'%t, 'loss = %f'%loss)
             if t % 100 == 0:
                 # imshow(img[0].detach())
-                imsave(batch, img.detach, "iteration_{}.png".format(t))
+                imsave(batch, img.detach(), "iteration_{}.png".format(t))
                 torch.save(model.state_dict(), os.path.join(dirname, 'convnet.th')) # Do NOT modify this line
 
 
