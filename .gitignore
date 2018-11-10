@@ -1,3 +1,11 @@
+#Output
+predictions/
+*.err
+*.out
+
+#Checkpoint
+*.chkpt
+
 # Datasets
 data/
 

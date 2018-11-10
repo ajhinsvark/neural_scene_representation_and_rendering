@@ -40,7 +40,7 @@ if __name__ == "__main__":
     
     start = time.perf_counter()
     # print(start)
-    dataset = SceneDataset(dataset='shepard_metzler_5_parts', context_size=5, root="data/general")
+    dataset = SceneDataset(dataset='shepard_metzler_5_parts', context_size=5, root="data")
     sampler = SceneSampler(dataset, start_idx=start_idx)
     dataloader = DataLoader(dataset, batch_size=36, sampler=sampler,
                         num_workers=8, shuffle=False)
