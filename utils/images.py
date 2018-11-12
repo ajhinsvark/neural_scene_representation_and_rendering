@@ -1,8 +1,16 @@
 from PIL import Image
 import torch
+from torchvision import transforms
 import numpy as np
 import matplotlib.pyplot as plt
 import random
+
+invTrans = transforms.Compose([ transforms.Normalize(mean = [ 0., 0., 0. ],
+                                                     std = [ 1/0.268, 1/0.321, 1/0.253 ]),
+                                transforms.Normalize(mean = [ -0.0855, -0.108, -0.0776 ],
+                                                     std = [ 1., 1., 1. ]),
+                               ])
+
 
 def imshow(tensor):
     if type(tensor) == torch.Tensor:
@@ -13,6 +21,7 @@ def imshow(tensor):
     img.show()
 
 def imsave(batch, prediction, fname):
+    
     rand_idx = random.randrange(len(batch['target']))
     # Destruct input
     batch_context = batch['query']['context']

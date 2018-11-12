@@ -1,6 +1,7 @@
 import torch
 from torch import nn, optim
 from torch.utils.data.dataloader import DataLoader
+from torchvision import transforms
 from scene_dataset import SceneDataset, SceneSampler
 import time
 from nn.vae import VAEDecoder
@@ -10,6 +11,7 @@ from utils.images import imshow, imsave
 import os
 import json
 from itertools import cycle
+import numpy as np
 
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
@@ -40,9 +42,13 @@ if __name__ == "__main__":
     
     start = time.perf_counter()
     # print(start)
+    composed = transforms.Compose([
+        transforms.Normalize([0.0855, 0.108, 0.0776], [0.268, 0.321, 0.253])
+    ])
+
     dataset = SceneDataset(dataset='shepard_metzler_5_parts', context_size=5, root="data")
     sampler = SceneSampler(dataset, start_idx=start_idx)
-    dataloader = DataLoader(dataset, batch_size=36, sampler=sampler,
+    dataloader = DataLoader(dataset, batch_size=20, sampler=sampler,
                         num_workers=8, shuffle=False)
     # print("dataloader setup took", time.perf_counter() - start)
     iter_start = time.perf_counter()
@@ -76,12 +82,14 @@ if __name__ == "__main__":
         # Destruct Target
         batch_target_view = batch['query']['query_camera'].to(device)
         batch_target = batch['target'].to(device)
+        print(torch.max(batch_target), torch.min(batch_target))
 
         model.train(True)
 
         optimizer.zero_grad()
         forward_start = time.perf_counter()
         img = model(batch_views, batch_frames, batch_target_view)
+        print( torch.max(img[:]), torch.min(img[:]))
 
         # print("Forward pass took", time.perf_counter() - forward_start)
         loss_start = time.perf_counter()

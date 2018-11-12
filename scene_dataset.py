@@ -37,12 +37,13 @@ class SceneSampler(Sampler):
 
 class SceneDataset(Dataset):
 
-    def __init__(self, dataset, context_size, root, mode='train'):
+    def __init__(self, dataset, context_size, root, mode='train', transform=None):
         self.dataset_info = _DATASETS[dataset]
         self.path = os.path.join(root, self.dataset_info.basepath, mode)
         self.context_size = context_size
         with open(os.path.join(self.path, 'info.meta'), 'r') as f:
             self.len = int(f.read())
+        self.transform = transform
         # csv_path = os.path.join(self.path, 'info.csv')
         # _type = np.float32
         # self.views_df = pd.read_csv(csv_path, dtype={'view': np.int32, 'x': _type, 'y': _type, 'z': _type, 'yaw': _type, 'pitch': _type})
@@ -57,7 +58,7 @@ class SceneDataset(Dataset):
     def __getitem__(self, i):
         print("Getting", i)
         rem = i % 1000
-        name = "record-{}.npz".format(i // 1000 + 1)
+        name = "record-{}.npz".format(i // 1000 + 1)    
         file_path = os.path.join(self.path, name)
         load_start = time.perf_counter()
         f = np.load(file_path, mmap_mode=None)
@@ -71,6 +72,8 @@ class SceneDataset(Dataset):
         sample_inds = np.random.permutation(len(scene_frames))[:self.context_size + 1]
         # print("permute", time.perf_counter() - permute_start)
         sample_frames = scene_frames[sample_inds]
+        if self.transform:
+            sample_frames = [self.transform(img) for img in sample_frames]
         process_start = time.perf_counter()
         sample_cameras = process_camera(scene_cameras[sample_inds])
         # print("processing", time.perf_counter() - process_start)

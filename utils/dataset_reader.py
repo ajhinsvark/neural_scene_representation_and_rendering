@@ -203,6 +203,7 @@ class DatasetWriter:
             cameras.append(rec_cameras)
         frames = np.array(frames)
         cameras = np.array(cameras)
+        # np.savez(os.path.join(img_dir, "record-{}.npy".format(self.counter + 1)), frames=frames, cameras=cameras)
         np.savez_compressed(os.path.join(img_dir, "record-{}.npz".format(self.counter + 1)), frames=frames, cameras=cameras)
         self.counter += 1
         if self.mode == 'train':
