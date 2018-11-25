@@ -44,19 +44,11 @@ class SceneDataset(Dataset):
         with open(os.path.join(self.path, 'info.meta'), 'r') as f:
             self.len = int(f.read())
         self.transform = transform
-        # csv_path = os.path.join(self.path, 'info.csv')
-        # _type = np.float32
-        # self.views_df = pd.read_csv(csv_path, dtype={'view': np.int32, 'x': _type, 'y': _type, 'z': _type, 'yaw': _type, 'pitch': _type})
-        # self.len = int(len(self.views_df.index) / self.dataset_info.sequence_size)
-        # print(self.views_df.head())
-        # print(self.views_df.info())
         
-    
     def __len__(self):
         return self.len
     
     def __getitem__(self, i):
-        print("Getting", i)
         rem = i % 1000
         name = "record-{}.npz".format(i // 1000 + 1)    
         file_path = os.path.join(self.path, name)

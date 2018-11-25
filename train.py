@@ -30,7 +30,7 @@ def load_checkpoint(checkpoint):
     return chkpt["iteration"], chkpt["model"]
 
 if __name__ == "__main__":
-    iters = 10000
+    iters = 100000
     dirname = ""
 
     files = os.listdir(None if not dirname else dirname)
@@ -46,10 +46,10 @@ if __name__ == "__main__":
         transforms.Normalize([0.0855, 0.108, 0.0776], [0.268, 0.321, 0.253])
     ])
 
-    dataset = SceneDataset(dataset='shepard_metzler_5_parts', context_size=5, root="data")
+    dataset = SceneDataset(dataset='shepard_metzler_5_parts', context_size=5, root="data/small")
     sampler = SceneSampler(dataset, start_idx=start_idx)
-    dataloader = DataLoader(dataset, batch_size=20, sampler=sampler,
-                        num_workers=8, shuffle=False)
+    dataloader = DataLoader(dataset, batch_size=10, sampler=sampler,
+                        num_workers=0, shuffle=False)
     # print("dataloader setup took", time.perf_counter() - start)
     iter_start = time.perf_counter()
     dataloader_iterator = cycle(iter(dataloader))
@@ -61,15 +61,17 @@ if __name__ == "__main__":
 
     loss_fn = nn.L1Loss()
 
-    lr_i = 5e-4
-    lr_f = 5e-5
-    n = 1.6e6
-    lr_func = lambda epoch: max(lr_f + (lr_i - lr_f)*(1 - epoch / n), lr_f)
-    optimizer = optim.Adam(model.parameters(), lr=1e-3, betas=(0.9, 0.999), eps=1e-8)
-    scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_func, last_epoch=start_idx-1)
-    
+    # lr_i = 5e-4
+    # lr_f = 5e-5
+    # n = 1.6e6
+    # lr_func = lambda epoch: max(lr_f + (lr_i - lr_f)*(1 - epoch / n), lr_f)
+    # optimizer = optim.Adam(model.parameters(), lr=1e-3, betas=(0.9, 0.999), eps=1e-8)
+    # scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_func, last_epoch=start_idx-1)
 
-    for t in range(start_idx, min(iters, len(dataloader))):
+    optimizer = optim.Adam(model.parameters(), lr=1e-3, eps=1e-8)
+    
+    # , len(dataloader)
+    for t in range(start_idx, iters):
         load_start = time.perf_counter()
         batch = next(dataloader_iterator)
         # print("Load took", time.perf_counter() - load_start)
@@ -82,25 +84,36 @@ if __name__ == "__main__":
         # Destruct Target
         batch_target_view = batch['query']['query_camera'].to(device)
         batch_target = batch['target'].to(device)
-        print(torch.max(batch_target), torch.min(batch_target))
+        # print(torch.max(batch_target), torch.min(batch_target))
 
         model.train(True)
 
         optimizer.zero_grad()
         forward_start = time.perf_counter()
         img = model(batch_views, batch_frames, batch_target_view)
-        print( torch.max(img[:]), torch.min(img[:]))
+        # print( torch.max(img[:]), torch.min(img[:]))
 
         # print("Forward pass took", time.perf_counter() - forward_start)
         loss_start = time.perf_counter()
         loss = loss_fn(img, batch_target)
         # print("loss calc", time.perf_counter() - loss_start)
 
+        p = next(model.parameters())
+        for x in p.shape[:-1]:
+            p = p[0]
+        print(p)
         backward_start = time.perf_counter()
         loss.backward()
+
+        p = next(model.parameters())
+        for x in p.shape[:-1]:
+            p = p[0]
+        print(p)
+
+        optimizer.step()
         # print("backward took", time.perf_counter() - backward_start)
         
-        scheduler.step()
+        # scheduler.step()
         # print("iter took", time.perf_counter() - load_start)
 
         if t % 10 == 0:
@@ -122,8 +135,8 @@ if __name__ == "__main__":
         
 
     end = time.perf_counter()
-    print(end)
+    print("end", end)
     dur = end - start
-    print(dur)
+    print("dur", dur)
 
 

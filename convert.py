@@ -74,22 +74,3 @@ def convert_dataset(dataset, root):
 
 if __name__ == "__main__":
     convert_dataset(dataset='shepard_metzler_5_parts', root=root_path)
-    # if _NEW_:
-    #     dataset = utils.dataset_reader.make_dataset(dataset='shepard_metzler_5_parts', context_size=5, root=root_path)
-    #     # dataset = dataset.batch(12)
-    #     iterator = dataset.make_one_shot_iterator()
-    #     next_elem = iterator.get_next()
-    #     writer = utils.dataset_reader.DatasetWriter(dataset='shepard_metzler_5_parts', mode='train', root=os.path.join(root_path, 'general'))
-
-    # with tf.Session() as sess:
-    #     for i in range(1)
-    #         try:
-    #             data = sess.run(next_elem)
-    #             writer.save_record(data)
-    #         except:
-    #             break
-        
-
-        
-
-    
