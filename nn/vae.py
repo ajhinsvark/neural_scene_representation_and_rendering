@@ -6,19 +6,28 @@ class VAEDecoder(nn.Module):
 
     def __init__(self):
         super().__init__()
+        
+        h_dim = 256 + 7
+        z_dim = 32
+        self.relu = nn.LeakyReLU()
 
-        self.relu = nn.ReLU()
+        self.fcMu = nn.Linear(h_dim, z_dim)
+        self.fcLogVar = nn.Linear(h_dim, z_dim)
+        self.fcExpand = nn.Linear(z_dim, h_dim)
 
-        self.fcMu = nn.Linear(256, 256)
-        self.fcLogVar = nn.Linear(256, 256)
-
-        self.deconv1 = nn.ConvTranspose2d(256+7, 128, kernel_size=16, stride=1, bias=False)
-        self.bn1 = nn.BatchNorm2d(128)
-        self.deconv2 = nn.ConvTranspose2d(128, 512, kernel_size=4, stride=2, padding=1, bias=False)
-        self.bn2 = nn.BatchNorm2d(512)
-        self.deconv3 = nn.ConvTranspose2d(512, 512, kernel_size=4, stride=2, padding=1, bias=False)
-        self.bn3 = nn.BatchNorm2d(512)
-        self.conv1   = nn.Conv2d(512, 3, kernel_size=1)
+        self.decoder = nn.Sequential(
+            nn.ConvTranspose2d(256 + 7, 128, kernel_size=5, stride=2),
+            # nn.BatchNorm2d(128),
+            nn.ReLU(),
+            nn.ConvTranspose2d(128, 64, kernel_size=5, stride=2),
+            # nn.BatchNorm2d(64),
+            nn.ReLU(),
+            nn.ConvTranspose2d(64, 32, kernel_size=6, stride=2),
+            # nn.BatchNorm2d(32),
+            nn.ReLU(),
+            # nn.Conv2d(32, 3, kernel_size=1)
+            nn.ConvTranspose2d(32, 3, kernel_size=6, stride=2)
+        )
     
     def reparameterize(self, mu, logvar):
         std = torch.exp(0.5*logvar).to(device)
@@ -27,27 +36,21 @@ class VAEDecoder(nn.Module):
 
     def get_normal_samples(self, encoding):
         # Expects input to be from pyramid 1 x 1 x 256
-        flat_encoding = encoding.view(-1, 256)
+        flat_encoding = encoding.view(-1, 256+7)
         mu = self.fcMu(flat_encoding)
-        logvar = self.fcMu(flat_encoding)
+        logvar = self.fcLogVar(flat_encoding)
         return self.reparameterize(mu, logvar)
     
     def decode(self, z):
-        deconv_input = z.view(-1,256+7, 1, 1)
+        # deconv_input = z.view(-1,256+7, 1, 1)
 
-        x = self.relu(self.bn1(self.deconv1(deconv_input)))
-        # print("128, 16, 16", x.shape)
-        x = self.relu(self.bn2(self.deconv2(x)))
-        # print("512, 32, 32", x.shape)
-        x = self.relu(self.bn3(self.deconv3(x)))
-        # print("512, 64, 64", x.shape)
-        x = self.relu(self.conv1(x))
-
-        return x
+        return self.decoder(z)
         
     def forward(self, representation, view):
-        z = self.get_normal_samples(representation)
-        decode_input = torch.cat([z, view], dim=1)
+        # print(representation.shape, view.shape)
+        z = self.get_normal_samples(torch.cat((representation, view[:,:,None,None]), dim=1))
+        z = self.fcExpand(z)
+        decode_input = z[:,:,None,None] # torch.cat([z.view(-1, 256, 1, 1), view[:,:,None,None]], dim=1)
         image = self.decode(decode_input)
         image = image.permute([0, 2, 3, 1])
         return image

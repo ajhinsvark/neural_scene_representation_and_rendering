@@ -66,3 +66,4 @@ def imsave(batch, prediction, fname):
     axs[1,2].set_xticklabels([])
 
     plt.savefig(fname)
+    plt.close(fig)

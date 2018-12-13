@@ -110,28 +110,43 @@ class DQN(nn.Module):
         return out
     
     def _pyramid(self, views, frames):
-        views = views.permute([1, 0, 2])
-        frames = frames.permute([1, 0, 4, 2, 3])
+        batch, context, view_size = views.shape
+        _, _, h, w, chans = frames.shape
+        
+        views = views[:,:,None,None,:].repeat([1,1,h,w,1]).permute([0, 1, 4, 2, 3])         # Batch Context length, h w
+        frames = frames.permute([0, 1, 4, 2, 3]) # Batch Context Chan, H, W
 
-        # Sum all representations
-        out = torch.zeros([len(views[0]), 256, 1, 1]).to(device)
-        for i in range(len(views)):
-            view = views[i].repeat([64, 64, 1, 1]).permute([2,3,0,1])
-            frame = frames[i]
+        contexts = torch.cat((views, frames), dim=2)  # concat along the channels
+        
+        contexts = contexts.view(batch * context, chans + view_size, h, w) # reshape for convolutions
 
-            x = torch.cat([view, frame], dim=1)
+        contexts = self.conv1(contexts)
+        contexts = self.conv2(contexts)
+        contexts = self.conv3(contexts)
+        contexts = self.conv4(contexts)
 
-            x = self.conv1(x)
-            # print(x.shape)
-            x = self.conv2(x)
-            # print(x.shape)
-            x = self.conv3(x)
-            # print(x.shape)
-            x = self.conv4(x)
+        contexts = contexts.view(batch, context, 256, 1, 1)
 
-            out += x
+        out = torch.sum(contexts, dim=1)
 
         return out
+        # Sum all representations
+        # out = torch.zeros([len(views[0]), 256, 1, 1]).to(device)
+        # for i in range(len(views)):
+        #     view = views[i].repeat([64, 64, 1, 1]).permute([2,3,0,1])
+        #     frame = frames[i]
+
+        #     x = torch.cat([view, frame], dim=1)
+
+        #     x = self.conv1(x)
+        #     # print(x.shape)
+        #     x = self.conv2(x)
+        #     # print(x.shape)
+        #     x = self.conv3(x)
+        #     # print(x.shape)
+        #     x = self.conv4(x)
+
+        #     out += x
 
 
 
